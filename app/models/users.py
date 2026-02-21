@@ -5,10 +5,10 @@ from sqlalchemy.orm import relationship
 from app.models.mixins.status_mixin import StatusMixin
 from app.models.mixins.timestamp_mixin import TimeStampMixin
 from app.models.mixins.soft_delete_mixin import SoftDeleteMixin
+from app.core.databse import Base
 
 
-
-class User(TimeStampMixin, SoftDeleteMixin, StatusMixin):
+class User(TimeStampMixin, SoftDeleteMixin, StatusMixin, Base):
 
     __tablename__ = "users"
 
