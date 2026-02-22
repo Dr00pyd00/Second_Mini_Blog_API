@@ -1,5 +1,4 @@
-import enum as pyEnum
-
+from enum import Enum as pyEnum
 from sqlalchemy import (
     Column,
     Enum as sqlEnum
@@ -8,7 +7,7 @@ from sqlalchemy import (
 
 class StatusEnum(pyEnum):
     ACTIVE = 'active'
-    ARCIVED = 'archived'
+    ARCHIVED = 'archived'
     REPORTED = 'reported'
 
 
@@ -16,7 +15,7 @@ class StatusEnum(pyEnum):
 class StatusMixin():
 
     status = Column(
-        sqlEnum(StatusEnum, name="status_enum", create_type=False),
+        sqlEnum(StatusEnum, name="status_enum"),
         nullable=False,
         server_default="ACTIVE",
         default=StatusEnum.ACTIVE,

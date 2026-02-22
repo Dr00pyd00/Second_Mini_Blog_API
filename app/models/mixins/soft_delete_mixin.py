@@ -1,17 +1,13 @@
-from time import timezone
-
-from sqlalchemy import Column, Datetime, func
-
+from sqlalchemy import Column, DateTime, func
 
 
 class SoftDeleteMixin():
 
     # if delete_at is None :  not soft deleted 
     # else : object is deleted!
-
     deleted_at = Column(
-        Datetime(timezone=True),
-        nullable=False
+        DateTime(timezone=True),
+        nullable=True
         )
 
     def soft_delete(self):
