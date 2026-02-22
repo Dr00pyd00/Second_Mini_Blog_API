@@ -17,6 +17,6 @@ class StatusMixin():
     status = Column(
         sqlEnum(StatusEnum, name="status_enum"),
         nullable=False,
-        server_default="ACTIVE",
+        server_default="active",
         default=StatusEnum.ACTIVE,
     )
