@@ -8,7 +8,7 @@ pw_context = CryptContext(
 
 
 # hash pw for db
-def hash__user_pw(plain_pw:str)->str:
+def hash_user_pw(plain_pw:str)->str:
     return pw_context.hash(plain_pw)
 
 # verify plain pw to db pw

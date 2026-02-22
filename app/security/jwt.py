@@ -1,9 +1,11 @@
 from enum import Enum
 from datetime import timedelta, datetime, timezone
-from jose import jwt
+from jose import jwt, JWTError
 
 from app.schemas.jwt import CreateAccessTokenSchema
 from app.core.config import app_settings
+from app.models.users import User
+from app.errors_messages.jwt import ERROR_JWT_BAD_CREDENTIALS
 
 
 
@@ -63,3 +65,23 @@ def create_refresh_token(
     )     
 
     return encoded_jwt_token
+
+
+#==============================
+#==== VERIFY TOKEN ============
+#==============================
+# verify if contain good payload and return user_id (int)
+def verify_jwt(token:str)->int:
+    """Return user_id (int) or raise HTTPException"""
+    try:
+        payload = jwt.decode(
+            token=token,
+            key=app_settings.secret_key,
+            algorithms=[app_settings.algorithm],
+        )
+        user_id: str | None = payload.get("sub") 
+        if user_id is None:
+            raise ERROR_JWT_BAD_CREDENTIALS
+        return int(user_id)
+    except JWTError:
+        raise ERROR_JWT_BAD_CREDENTIALS
