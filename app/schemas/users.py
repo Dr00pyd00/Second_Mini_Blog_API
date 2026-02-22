@@ -37,6 +37,7 @@ class UserCreationSchema(BaseModel):
             raise ValueError("<password> must contain at least ONE digit.")
         if not any(char.isalpha() for char in pw):
             raise ValueError("<password> must contain at least ONE alphabetic char.")
+        return pw
     
 
 # for login
