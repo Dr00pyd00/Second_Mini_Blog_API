@@ -1,11 +1,24 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import  (
+    Column,
+    Integer,
+    String,
+    Enum as sqlEnum
+)
 from sqlalchemy.orm import relationship
+from enum import Enum as pyEnum
 
 
 from app.models.mixins.status_mixin import StatusMixin
 from app.models.mixins.timestamp_mixin import TimeStampMixin
 from app.models.mixins.soft_delete_mixin import SoftDeleteMixin
 from app.core.databse import Base
+
+
+# enum for roles:
+class RoleEnum(pyEnum):
+    USER = "USER"
+    ADMIN = "ADMIN"
+    MODERATOR = "MODERATOR"
 
 
 class User(TimeStampMixin, SoftDeleteMixin, StatusMixin, Base):
@@ -33,6 +46,13 @@ class User(TimeStampMixin, SoftDeleteMixin, StatusMixin, Base):
         String,
         nullable=True,
         unique=True,
+    )
+
+    role = Column(
+        sqlEnum(RoleEnum, name="roles_enum"),
+        nullable=False,
+        server_default="USER",
+        default=RoleEnum.USER,
     )
 
     # Relations:

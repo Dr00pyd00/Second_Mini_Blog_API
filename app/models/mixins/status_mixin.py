@@ -6,9 +6,9 @@ from sqlalchemy import (
 
 
 class StatusEnum(pyEnum):
-    ACTIVE = 'active'
-    ARCHIVED = 'archived'
-    REPORTED = 'reported'
+    ACTIVE = "ACTIVE"
+    ARCHIVED = "ARCHIVED"
+    REPORTED = "REPORTED"
 
 
 
@@ -17,6 +17,6 @@ class StatusMixin():
     status = Column(
         sqlEnum(StatusEnum, name="status_enum"),
         nullable=False,
-        server_default="active",
+        server_default="ACTIVE",
         default=StatusEnum.ACTIVE,
     )
