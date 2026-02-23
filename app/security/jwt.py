@@ -25,7 +25,7 @@ def create_access_token(
     to_encode = {
         "sub": str(user_data.user_id),
         "exp": expiration,
-        "role": user_data.user_role,
+        "role": user_data.user_role.value,
         "iat": now, # issued at
     }
 
