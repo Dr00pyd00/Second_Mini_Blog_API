@@ -21,6 +21,7 @@ def get_user_by_id_or_404(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User ID:{id} not found."
         )
+    return user
 
 # create user 
 def create_user_service(
