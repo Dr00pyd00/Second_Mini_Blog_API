@@ -2,7 +2,10 @@ from typing import Optional
 import re
 from datetime import datetime
 
-from pydantic import BaseModel, Field, EmailStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, EmailStr, field_validator
+
+from app.models.mixins.status_mixin import StatusEnum
+from app.models.users import RoleEnum
 
 
 # for create new user
@@ -54,3 +57,12 @@ class UserDataFromDbSchema(BaseModel):
     created_at: datetime
 
     model_config={"from_attributes":True}
+
+# FILTERS ====================================================
+class UsersFilterRoleStatusSchema(BaseModel):
+    # if field is a unknown ( by enum)  send error
+    model_config = ConfigDict(extra="forbid")
+
+    role: RoleEnum | None = None
+    status: StatusEnum | None = None
+    deleted: bool = False

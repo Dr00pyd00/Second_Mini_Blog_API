@@ -3,7 +3,8 @@ from typing import Annotated, List
 from fastapi import APIRouter, status, Depends, Body
 from sqlalchemy.orm import Session
 
-from app.schemas.users import UserCreationSchema, UserDataFromDbSchema
+from app.dependencies.users_filters import get_user_filter_role_status
+from app.schemas.users import UserCreationSchema, UserDataFromDbSchema, UsersFilterRoleStatusSchema
 from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
 from app.services.users import create_user_service
@@ -42,7 +43,19 @@ def get_me(
 def get_all_users(
     admin_user: Annotated[User, Depends(required_roles(RoleEnum.ADMIN))],
     db: Annotated[Session, Depends(get_db)],
+    filters: Annotated[UsersFilterRoleStatusSchema, Depends(get_user_filter_role_status)],
 )->List[UserDataFromDbSchema]:
-    users = db.query(User).all()
 
-    return users
+    print(f"filters:  role={filters.role} status_comp={filters.status == "ACTIVE"} status={filters.status.value} deleted:{filters.deleted}")
+    query = db.query(User)
+
+    if filters.status:
+        query = query.filter(User.status == filters.status)
+    if filters.role:
+        query = query.filter(User.role == filters.role)
+    if not filters.deleted:
+        query = query.filter(User.deleted_at == None )
+
+    
+
+    return query.all()
