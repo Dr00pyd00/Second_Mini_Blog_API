@@ -7,3 +7,9 @@ ERROR_JWT_BAD_CREDENTIALS = HTTPException(
     detail="Invalid JWT Credentials.",
     headers={"WWW-Authenticate": "Bearer"},
 )
+
+
+ERROR_ROLE_REQUIRED = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="Role required not set."
+)

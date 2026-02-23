@@ -4,10 +4,11 @@ from fastapi import APIRouter, status, Depends, Body
 from sqlalchemy.orm import Session
 
 from app.schemas.users import UserCreationSchema, UserDataFromDbSchema
-from app.models.users import User
+from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
 from app.services.users import create_user_service
 from app.dependencies.jwt import get_current_user, get_user_by_id_or_404
+from app.dependencies.jwt import required_roles
 
 router = APIRouter(
     prefix="/users",
@@ -30,7 +31,7 @@ def create_user(
 # /me 
 @router.get("/me", status_code=status.HTTP_200_OK, response_model=UserDataFromDbSchema)
 def get_me(
-        current_user: Annotated[User, Depends(get_current_user)] 
+        current_user_role_required: Annotated[User, Depends(required_roles(RoleEnum.USER))] 
 )->UserDataFromDbSchema:
     
-    return current_user
+    return current_user_role_required
