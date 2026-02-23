@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import APIRouter, status, Depends, Body
 from sqlalchemy.orm import Session
@@ -35,3 +35,14 @@ def get_me(
 )->UserDataFromDbSchema:
     
     return current_user_role_required
+
+
+# List of all users for admin only:
+@router.get("/all_list", status_code=status.HTTP_200_OK, response_model=List[UserDataFromDbSchema])
+def get_all_users(
+    admin_user: Annotated[User, Depends(required_roles(RoleEnum.ADMIN))],
+    db: Annotated[Session, Depends(get_db)],
+)->List[UserDataFromDbSchema]:
+    users = db.query(User).all()
+
+    return users
