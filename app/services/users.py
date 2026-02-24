@@ -3,12 +3,16 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
 
+from app.models.mixins.status_mixin import StatusEnum
 from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
 from app.schemas.users import UserCreationSchema
 from app.security.password_users import hash_user_pw
-from app.errors_messages.users import ERROR_USERNAME_ALREADY_TAKEN, ERROR_ADMIN_CANT_SELF_CHANGE_ROLE
-
+from app.errors_messages.users import (
+    ERROR_USERNAME_ALREADY_TAKEN,
+    ERROR_ADMIN_CANT_SELF_CHANGE_ROLE, 
+    ERROR_ADMIN_OR_MODERATOR_CANT_SELF_CHANGE_STATUS
+)
 
 # get user or return a 404 HTTPException
 def get_user_by_id_or_404(
@@ -42,8 +46,8 @@ def create_user_service(
     return new_user
 
     
-# Change user status (by a admin) ===========================================
-def change_user_status_by_admin_service(
+# Change user role (by a admin) ===========================================
+def change_user_role_by_admin_service(
         admin_id: int,
         user_id: int,
         new_role: RoleEnum,
@@ -53,6 +57,26 @@ def change_user_status_by_admin_service(
         raise ERROR_ADMIN_CANT_SELF_CHANGE_ROLE
     user_to_update = get_user_by_id_or_404(id=user_id, db=db)
     user_to_update.role = new_role
+    db.commit()
+    db.refresh(user_to_update)
+
+    return user_to_update
+
+
+# Change user status (by admin or moderator)
+def change_user_status_by_admin_or_moderator_service(
+        admin_id: int,
+        user_id: int,
+        new_status: StatusEnum,
+        db: Session,
+)->User:
+    if admin_id == user_id:
+        raise ERROR_ADMIN_OR_MODERATOR_CANT_SELF_CHANGE_STATUS
+    
+
+    
+    user_to_update = get_user_by_id_or_404(id=user_id, db=db)
+    user_to_update.status = new_status
     db.commit()
     db.refresh(user_to_update)
 

@@ -58,9 +58,15 @@ class UserDataFromDbSchema(BaseModel):
 
     model_config={"from_attributes":True}
 
-# user role when put
+# user role when  patch for change role
 class UserSwapRoleFormSchema(BaseModel):
-    new_role: RoleEnum 
+    new_role: RoleEnum
+
+# user status when patch for change status
+class UserSwapStatusFormSchema(BaseModel):
+    new_status: StatusEnum
+
+
 # FILTERS ====================================================
 class UsersFilterRoleStatusSchema(BaseModel):
     # if field is a unknown ( by enum)  send error
