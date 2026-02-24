@@ -1,4 +1,3 @@
-from inspect import BoundArguments
 from typing import Annotated, List
 
 from fastapi import APIRouter, status, Depends, Body, Path
@@ -9,14 +8,30 @@ from app.schemas.users import UserCreationSchema, UserDataFromDbSchema, UserSwap
 from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
 from app.services.users import create_user_service
-from app.dependencies.jwt import get_current_user, get_user_by_id_or_404
-from app.dependencies.jwt import required_roles
+from app.dependencies.jwt import get_current_user, required_roles
 from app.services.users import change_user_role_by_admin_service, change_user_status_by_admin_or_moderator_service
 
 router = APIRouter(
     prefix="/users",
     tags=["users"],
 )
+
+#######################################
+########    USER    #################
+#######################################
+
+# ========== GET ====================================== #  
+
+# /me 
+@router.get("/me", status_code=status.HTTP_200_OK, response_model=UserDataFromDbSchema)
+def get_me(
+        current_user: Annotated[User, Depends(get_current_user)] 
+)->UserDataFromDbSchema:
+    
+    return current_user
+
+
+# ========== POST ====================================== #  
 
 # user creation
 @router.post(
@@ -28,17 +43,23 @@ def create_user(
     user_fields: Annotated[UserCreationSchema, Body(..., description="Fields for create new user.")],
     db: Annotated[Session, Depends(get_db)],
 )->UserDataFromDbSchema:
+
     return create_user_service(user_data=user_fields, db=db)
 
 
-# /me 
-@router.get("/me", status_code=status.HTTP_200_OK, response_model=UserDataFromDbSchema)
-def get_me(
-        current_user_role_required: Annotated[User, Depends(required_roles(RoleEnum.ADMIN, RoleEnum.MODERATOR))] 
-)->UserDataFromDbSchema:
-    
-    return current_user_role_required
 
+# ========== PUT ====================================== #  
+
+# ========== PATCH ====================================== #  
+
+# ========== DELETE ====================================== # 
+
+
+#######################################
+########    ADMIN MODERATOR    ########
+#######################################
+
+# ========== GET ====================================== #  
 
 # List of all users for admin only:
 @router.get("/all_list", status_code=status.HTTP_200_OK, response_model=List[UserDataFromDbSchema])
@@ -60,7 +81,13 @@ def get_all_users(
     return query.all()
 
 
-# change user Role as Admin only ===============================
+# ========== POST ====================================== #  
+
+# ========== PUT ====================================== #  
+
+# ========== PATCH ====================================== #  
+
+# change user Role as Admin only 
 @router.patch("/{user_id}/role", status_code=status.HTTP_200_OK, response_model=UserDataFromDbSchema)
 def change_user_role_by_admin(
     admin_user: Annotated[User, Depends(required_roles(RoleEnum.ADMIN))],
@@ -76,6 +103,7 @@ def change_user_role_by_admin(
         db=db,
     )
 
+
 # changer user status as Admin or Moderator only ================================
 @router.patch("/{user_id}/status", status_code=status.HTTP_200_OK, response_model=UserDataFromDbSchema)
 def change_user_status_by_admin_or_moderator(
@@ -90,3 +118,6 @@ def change_user_status_by_admin_or_moderator(
         new_status=new_status.new_status,
         db=db,
     )
+
+
+# ========== DELETE ====================================== # 
