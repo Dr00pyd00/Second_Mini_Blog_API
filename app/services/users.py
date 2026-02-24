@@ -7,7 +7,7 @@ from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
 from app.schemas.users import UserCreationSchema
 from app.security.password_users import hash_user_pw
-from app.errors_messages.users import ERROR_USERNAME_ALREADY_TAKEN
+from app.errors_messages.users import ERROR_USERNAME_ALREADY_TAKEN, ERROR_ADMIN_CANT_SELF_CHANGE_ROLE
 
 
 # get user or return a 404 HTTPException
@@ -44,10 +44,13 @@ def create_user_service(
     
 # Change user status (by a admin) ===========================================
 def change_user_status_by_admin_service(
+        admin_id: int,
         user_id: int,
         new_role: RoleEnum,
         db: Session,
 )->User:
+    if admin_id == user_id:
+        raise ERROR_ADMIN_CANT_SELF_CHANGE_ROLE
     user_to_update = get_user_by_id_or_404(id=user_id, db=db)
     user_to_update.role = new_role
     db.commit()

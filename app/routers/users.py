@@ -70,6 +70,7 @@ def change_user_status_by_admin(
 )->UserDataFromDbSchema:
     
     return change_user_status_by_admin_service(
+        admin_id=admin_user.id,
         user_id=user_id,
         new_role=new_role.new_role,
         db=db,
