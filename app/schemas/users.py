@@ -55,6 +55,7 @@ class UserDataFromDbSchema(BaseModel):
     status: str
     role: str
     created_at: datetime
+    deleted_at: datetime | None
 
     model_config={"from_attributes":True}
 

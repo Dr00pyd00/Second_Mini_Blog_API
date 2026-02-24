@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
 
+from app.errors_messages.users import ERROR_USER_SOFT_DELETED
 from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
 from app.security.jwt import verify_jwt
@@ -23,6 +24,8 @@ def get_current_user(
     
     user_id = verify_jwt(token=token)
     user = get_user_by_id_or_404(id=user_id, db=db) 
+    if user.deleted_at is not None:
+        raise ERROR_USER_SOFT_DELETED
     return user
 
 

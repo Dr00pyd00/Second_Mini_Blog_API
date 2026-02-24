@@ -1,4 +1,5 @@
 from typing import Annotated
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
@@ -12,7 +13,10 @@ from app.errors_messages.users import (
     ERROR_USERNAME_ALREADY_TAKEN,
     ERROR_ADMIN_CANT_SELF_CHANGE_ROLE, 
     ERROR_ADMIN_OR_MODERATOR_CANT_SELF_CHANGE_STATUS,
-    ERROR_MODERATOR_CANT_CHANGE_ADMIN_STATUS
+    ERROR_MODERATOR_CANT_CHANGE_ADMIN_STATUS,
+    ERROR_ADMIN_CANT_SELF_DELETE_USER,
+    ERROR_USER_CANT_DELETE_OTHER_USER,
+    ERROR_USER_SOFT_DELETED
 )
 
 # get user or return a 404 HTTPException
@@ -84,3 +88,33 @@ def change_user_status_by_admin_or_moderator_service(
     db.refresh(user_to_update)
 
     return user_to_update
+
+
+# soft delete : the current user OR admin can soft delete the user.
+def soft_delete_user_service(
+        current_user: User,
+        user_id: int,
+        db: Session,
+)->User:
+    user_to_delete = get_user_by_id_or_404(id=user_id, db=db)
+    if user_to_delete.deleted_at is not None:
+        raise ERROR_USER_SOFT_DELETED
+
+    # if current_user is admin
+    if current_user.role == RoleEnum.ADMIN:
+        if current_user.id == user_id:
+            raise ERROR_ADMIN_CANT_SELF_DELETE_USER
+        user_to_delete.deleted_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(user_to_delete)
+        return user_to_delete
+
+    # if current user not admin
+    if current_user.id != user_id:
+        raise ERROR_USER_CANT_DELETE_OTHER_USER
+    # user delete his own account:
+    user_to_delete.deleted_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(user_to_delete)
+    return user_to_delete
+

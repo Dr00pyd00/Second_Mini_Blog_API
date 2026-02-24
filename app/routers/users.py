@@ -7,7 +7,7 @@ from app.dependencies.users_filters import get_user_filter_role_status
 from app.schemas.users import UserCreationSchema, UserDataFromDbSchema, UserSwapStatusFormSchema, UsersFilterRoleStatusSchema, UserSwapRoleFormSchema
 from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
-from app.services.users import create_user_service
+from app.services.users import create_user_service, soft_delete_user_service
 from app.dependencies.jwt import get_current_user, required_roles
 from app.services.users import change_user_role_by_admin_service, change_user_status_by_admin_or_moderator_service
 
@@ -53,6 +53,20 @@ def create_user(
 # ========== PATCH ====================================== #  
 
 # ========== DELETE ====================================== # 
+
+# delete user 
+@router.delete("/{user_id}", status_code=status.HTTP_200_OK, response_model=UserDataFromDbSchema)
+def soft_delete_user(
+    current_user: Annotated[User, Depends(get_current_user)],
+    user_id: Annotated[int, Path(..., description="ID of the user you want to softdelete.")],
+    db: Annotated[Session, Depends(get_db)],
+)->UserDataFromDbSchema:
+    
+    return soft_delete_user_service(
+        current_user=current_user,
+        user_id=user_id,
+        db=db,
+    )
 
 
 #######################################
