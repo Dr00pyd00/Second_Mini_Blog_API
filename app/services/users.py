@@ -3,7 +3,7 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
 
-from app.models.users import User
+from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
 from app.schemas.users import UserCreationSchema
 from app.security.password_users import hash_user_pw
@@ -13,7 +13,7 @@ from app.errors_messages.users import ERROR_USERNAME_ALREADY_TAKEN
 # get user or return a 404 HTTPException
 def get_user_by_id_or_404(
         id: int,
-        db: Annotated[Session, Depends(get_db)],
+        db: Session,
 )->User:
     user = db.query(User).filter(User.id == id).first()
     if not user:
@@ -23,7 +23,7 @@ def get_user_by_id_or_404(
         )
     return user
 
-# create user 
+# create user  ==============================================
 def create_user_service(
         user_data: UserCreationSchema,
         db: Session,
@@ -42,4 +42,15 @@ def create_user_service(
     return new_user
 
     
+# Change user status (by a admin) ===========================================
+def change_user_status_by_admin_service(
+        user_id: int,
+        new_role: RoleEnum,
+        db: Session,
+)->User:
+    user_to_update = get_user_by_id_or_404(id=user_id, db=db)
+    user_to_update.role = new_role
+    db.commit()
+    db.refresh(user_to_update)
 
+    return user_to_update

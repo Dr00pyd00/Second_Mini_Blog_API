@@ -1,15 +1,16 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, status, Depends, Body
+from fastapi import APIRouter, status, Depends, Body, Path
 from sqlalchemy.orm import Session
 
 from app.dependencies.users_filters import get_user_filter_role_status
-from app.schemas.users import UserCreationSchema, UserDataFromDbSchema, UsersFilterRoleStatusSchema
+from app.schemas.users import UserCreationSchema, UserDataFromDbSchema, UsersFilterRoleStatusSchema, UserSwapRoleFormSchema
 from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
 from app.services.users import create_user_service
 from app.dependencies.jwt import get_current_user, get_user_by_id_or_404
 from app.dependencies.jwt import required_roles
+from app.services.users import change_user_status_by_admin_service
 
 router = APIRouter(
     prefix="/users",
@@ -56,6 +57,20 @@ def get_all_users(
     if not filters.deleted:
         query = query.filter(User.deleted_at == None )
 
-    
-
     return query.all()
+
+
+# change user Role as Admin only ===============================
+@router.patch("/{user_id}/role", status_code=status.HTTP_200_OK, response_model=UserDataFromDbSchema)
+def change_user_status_by_admin(
+    admin_user: Annotated[User, Depends(required_roles(RoleEnum.ADMIN))],
+    user_id: Annotated[int, Path(..., description="user ID you want change role.")],
+    new_role: Annotated[UserSwapRoleFormSchema, Body(..., description="new role to give the user.")],
+    db: Annotated[Session, Depends(get_db)],
+)->UserDataFromDbSchema:
+    
+    return change_user_status_by_admin_service(
+        user_id=user_id,
+        new_role=new_role.new_role,
+        db=db,
+    )

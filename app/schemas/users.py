@@ -58,6 +58,9 @@ class UserDataFromDbSchema(BaseModel):
 
     model_config={"from_attributes":True}
 
+# user role when put
+class UserSwapRoleFormSchema(BaseModel):
+    new_role: RoleEnum 
 # FILTERS ====================================================
 class UsersFilterRoleStatusSchema(BaseModel):
     # if field is a unknown ( by enum)  send error
@@ -66,3 +69,5 @@ class UsersFilterRoleStatusSchema(BaseModel):
     role: RoleEnum | None = None
     status: StatusEnum | None = None
     deleted: bool = False
+
+
