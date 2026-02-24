@@ -10,6 +10,7 @@ from app.dependencies.database import get_db
 from app.schemas.users import UserCreationSchema
 from app.security.password_users import hash_user_pw
 from app.errors_messages.users import (
+    ERROR_CANT_DELETE_LAST_ADMIN,
     ERROR_USERNAME_ALREADY_TAKEN,
     ERROR_ADMIN_CANT_SELF_CHANGE_ROLE, 
     ERROR_ADMIN_OR_MODERATOR_CANT_SELF_CHANGE_STATUS,
@@ -97,6 +98,12 @@ def soft_delete_user_service(
         db: Session,
 )->User:
     user_to_delete = get_user_by_id_or_404(id=user_id, db=db)
+    # Protection to NOT deleted the last admin:
+
+    admin_count = db.query(User).filter(User.role == RoleEnum.ADMIN, User.deleted_at == None).count()
+    if admin_count == 1 and user_to_delete.role == RoleEnum.ADMIN:
+        raise ERROR_CANT_DELETE_LAST_ADMIN
+
     if user_to_delete.deleted_at is not None:
         raise ERROR_USER_SOFT_DELETED
 

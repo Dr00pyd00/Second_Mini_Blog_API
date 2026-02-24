@@ -36,3 +36,8 @@ ERROR_USER_SOFT_DELETED = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
     detail="user soft deleted."
 )
+
+ERROR_CANT_DELETE_LAST_ADMIN = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Last admin can't be deleted."
+)
