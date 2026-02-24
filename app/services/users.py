@@ -11,7 +11,8 @@ from app.security.password_users import hash_user_pw
 from app.errors_messages.users import (
     ERROR_USERNAME_ALREADY_TAKEN,
     ERROR_ADMIN_CANT_SELF_CHANGE_ROLE, 
-    ERROR_ADMIN_OR_MODERATOR_CANT_SELF_CHANGE_STATUS
+    ERROR_ADMIN_OR_MODERATOR_CANT_SELF_CHANGE_STATUS,
+    ERROR_MODERATOR_CANT_CHANGE_ADMIN_STATUS
 )
 
 # get user or return a 404 HTTPException
@@ -65,17 +66,19 @@ def change_user_role_by_admin_service(
 
 # Change user status (by admin or moderator)
 def change_user_status_by_admin_or_moderator_service(
-        admin_id: int,
+        current_user: User,
         user_id: int,
         new_status: StatusEnum,
         db: Session,
 )->User:
-    if admin_id == user_id:
+    if current_user.id == user_id:
         raise ERROR_ADMIN_OR_MODERATOR_CANT_SELF_CHANGE_STATUS
     
-
-    
     user_to_update = get_user_by_id_or_404(id=user_id, db=db)
+
+    # secure if current user less rights of user_to_update (ie: current=MODERATOR, user_to_update=ADMIN)
+    if current_user.role == RoleEnum.MODERATOR and user_to_update.role == RoleEnum.ADMIN:
+        raise ERROR_MODERATOR_CANT_CHANGE_ADMIN_STATUS
     user_to_update.status = new_status
     db.commit()
     db.refresh(user_to_update)

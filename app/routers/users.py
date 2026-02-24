@@ -85,7 +85,7 @@ def change_user_status_by_admin_or_moderator(
     db: Annotated[Session, Depends(get_db)],
 ):
     return change_user_status_by_admin_or_moderator_service(
-        admin_id=current_user.id,
+        current_user=current_user,
         user_id=user_id,
         new_status=new_status.new_status,
         db=db,
