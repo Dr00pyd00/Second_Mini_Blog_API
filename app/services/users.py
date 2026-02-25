@@ -99,7 +99,6 @@ def soft_delete_user_service(
 )->User:
     user_to_delete = get_user_by_id_or_404(id=user_id, db=db)
     # Protection to NOT deleted the last admin:
-
     admin_count = db.query(User).filter(User.role == RoleEnum.ADMIN, User.deleted_at == None).count()
     if admin_count == 1 and user_to_delete.role == RoleEnum.ADMIN:
         raise ERROR_CANT_DELETE_LAST_ADMIN
@@ -111,10 +110,6 @@ def soft_delete_user_service(
     if current_user.role == RoleEnum.ADMIN:
         if current_user.id == user_id:
             raise ERROR_ADMIN_CANT_SELF_DELETE_USER
-        user_to_delete.deleted_at = datetime.now(timezone.utc)
-        db.commit()
-        db.refresh(user_to_delete)
-        return user_to_delete
 
     # if current user not admin
     if current_user.id != user_id:

@@ -1,6 +1,6 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, status, Depends, Body, Path
+from fastapi import APIRouter, Query, status, Depends, Body, Path
 from sqlalchemy.orm import Session
 
 from app.dependencies.users_filters import get_user_filter_role_status
@@ -76,11 +76,14 @@ def soft_delete_user(
 # ========== GET ====================================== #  
 
 # List of all users for admin only:
+# Pagination skip/limit:
 @router.get("/all_list", status_code=status.HTTP_200_OK, response_model=List[UserDataFromDbSchema])
 def get_all_users(
     admin_user: Annotated[User, Depends(required_roles(RoleEnum.ADMIN))],
     db: Annotated[Session, Depends(get_db)],
     filters: Annotated[UsersFilterRoleStatusSchema, Depends(get_user_filter_role_status)],
+    skip: Annotated[int, Query(ge=0, description="number of users to skip.")] = 0,
+    limit: Annotated[int, Query(ge=1, le=100, description="number of users in a request: 1 to 100 max.")] = 10,
 )->List[UserDataFromDbSchema]:
 
     query = db.query(User)
@@ -91,6 +94,13 @@ def get_all_users(
         query = query.filter(User.role == filters.role)
     if not filters.deleted :
         query = query.filter(User.deleted_at == None )
+    
+    # pagination:
+    query = (
+        query.order_by(User.created_at)
+        .limit(limit)
+        .offset(skip)
+    )
 
     return query.all()
 
