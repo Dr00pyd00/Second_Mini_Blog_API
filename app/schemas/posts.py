@@ -43,3 +43,11 @@ class PostGetAllFilters(BaseModel):
 
     status: StatusEnum | None = None 
     see_deleted: bool = False
+
+
+# For patch :
+# all possibly none and user can choice what to change
+class PostPatchFormSchema(BaseModel):
+    title: str | None = None
+    content: str | None = None 
+    published: bool = True

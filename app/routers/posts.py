@@ -6,9 +6,9 @@ from sqlalchemy.orm import Session
 
 from app.dependencies.jwt import get_current_user
 from app.dependencies.posts_filters import get_post_filters
-from app.schemas.posts import PostCreationForm, PostDataFromDbSchema, PostGetAllFilters 
+from app.schemas.posts import PostCreationForm, PostDataFromDbSchema, PostGetAllFilters, PostPatchFormSchema 
 from app.models.users import User
-from app.services.posts import create_post_service, get_all_posts_service, soft_delete_post_by_id_service
+from app.services.posts import create_post_service, get_all_posts_service, soft_delete_post_by_id_service, update_patch_post_service
 from app.dependencies.database import get_db
 
 
@@ -58,6 +58,21 @@ def create_new_post(
     )
 # ============== PUT =================================== #
 # ============== PATCH =================================== #
+
+# update patch post 
+@router.patch("/{post_id}", status_code=status.HTTP_200_OK, response_model=PostDataFromDbSchema)
+def update_patch_post(
+    current_user: Annotated[User, Depends(get_current_user)],
+    post_id: Annotated[int, Path(..., description="post ID you want to soft delete.")],
+    db: Annotated[Session, Depends(get_db)],
+    post_data: Annotated[PostPatchFormSchema, Body(description="fields for posts data update.")] = None,
+)->PostDataFromDbSchema:
+    return update_patch_post_service(
+        current_user=current_user,
+        post_data=post_data,
+        post_id=post_id,
+        db=db,
+    )
 # ============== DELETE =================================== #
 
 # delete post by ID:
