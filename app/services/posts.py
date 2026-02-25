@@ -65,6 +65,13 @@ def get_all_posts_service(
     posts = query.all()
     return posts
 
+# get post by ID:
+def get_post_by_id_service(
+    post_id: int,
+    db: Session
+)->Post:
+    return get_post_or_404(post_id=post_id, db=db)
+
 
 ######### POST #################################
 
