@@ -16,6 +16,8 @@ class PostDataFromDbSchema(BaseModel):
     status: StatusEnum = "ACTIVE"
     owner: UserDataFromDbSchema
 
+    model_config = {"from_attributes":True}
+
 # create a post:
 class PostCreationForm(BaseModel):
     title: str = Field(
@@ -50,4 +52,4 @@ class PostGetAllFilters(BaseModel):
 class PostPatchFormSchema(BaseModel):
     title: str | None = None
     content: str | None = None 
-    published: bool = True
+    published: bool | None = None
