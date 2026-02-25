@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from app.models.mixins.status_mixin import StatusEnum
 from app.schemas.users import UserDataFromDbSchema
@@ -33,3 +33,13 @@ class PostCreationForm(BaseModel):
     )
 
     published: bool = True
+
+
+# Filters status:
+class PostGetAllFilters(BaseModel):
+    
+     # if field is a unknown ( by enum)  send error
+    model_config = ConfigDict(extra="forbid")
+
+    status: StatusEnum | None = None 
+    see_deleted: bool = False
