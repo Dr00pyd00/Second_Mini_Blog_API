@@ -1,6 +1,6 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Query, status, Depends, Body, Path
+from fastapi import APIRouter, BackgroundTasks, Query, status, Depends, Body, Path
 from sqlalchemy.orm import Session
 
 from app.dependencies.users_filters import get_user_filter_role_status
@@ -41,10 +41,11 @@ def get_me(
 )
 def create_user(
     user_fields: Annotated[UserCreationSchema, Body(..., description="Fields for create new user.")],
+    background_task: BackgroundTasks,
     db: Annotated[Session, Depends(get_db)],
 )->UserDataFromDbSchema:
 
-    return create_user_service(user_data=user_fields, db=db)
+    return create_user_service(user_data=user_fields,background_task=background_task, db=db)
 
 
 

@@ -41,3 +41,8 @@ ERROR_CANT_DELETE_LAST_ADMIN = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Last admin can't be deleted."
 )
+
+ERROR_EMAIL_ALREADY_TAKEN = HTTPException(
+    status_code=status.HTTP_409_CONFLICT,
+    detail="Email already taken."
+)

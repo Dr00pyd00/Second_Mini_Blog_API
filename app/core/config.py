@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     refresh_token_expire_minutes: int = 9000
 
+    # for email testing:
+    mail_username: str
+    mail_password: str
+    mail_host: str
+    mail_port: int
+    mail_from: str
+
     @property
     def db_url(self):
         return (

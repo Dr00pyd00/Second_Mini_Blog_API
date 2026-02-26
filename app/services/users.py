@@ -2,8 +2,9 @@ from typing import Annotated
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException, status
+from fastapi import BackgroundTasks, Depends, HTTPException, status
 
+from app.core.mails import send_welcome_email
 from app.models.mixins.status_mixin import StatusEnum
 from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
@@ -11,6 +12,7 @@ from app.schemas.users import UserCreationSchema
 from app.security.password_users import hash_user_pw
 from app.errors_messages.users import (
     ERROR_CANT_DELETE_LAST_ADMIN,
+    ERROR_EMAIL_ALREADY_TAKEN,
     ERROR_USERNAME_ALREADY_TAKEN,
     ERROR_ADMIN_CANT_SELF_CHANGE_ROLE, 
     ERROR_ADMIN_OR_MODERATOR_CANT_SELF_CHANGE_STATUS,
@@ -36,11 +38,18 @@ def get_user_by_id_or_404(
 # create user  ==============================================
 def create_user_service(
         user_data: UserCreationSchema,
+        background_task: BackgroundTasks,
         db: Session,
 )->User:
+    # unique username:
     existing_user = db.query(User).filter(User.username == user_data.username).first()
     if existing_user:
         raise ERROR_USERNAME_ALREADY_TAKEN
+    # unique email:
+    if user_data.email:
+        existing_mail = db.query(User).filter(User.email == user_data.email).first()
+        if existing_mail:
+            raise ERROR_EMAIL_ALREADY_TAKEN
 
     user_data_dict = user_data.model_dump()
     user_data_dict["password"] = hash_user_pw(user_data_dict["password"])
@@ -49,6 +58,10 @@ def create_user_service(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    # start background task:
+    if new_user.email:
+        background_task.add_task(send_welcome_email, email=new_user.email, username=new_user.username)
     return new_user
 
     
