@@ -19,6 +19,8 @@ mail_conf = ConnectionConfig(
 
 # send function async mandatory
 
+
+# Welcome new user ===============================================================
 async def send_welcome_email(email: str, username: str):
     message = MessageSchema(
         subject="Welcome !",
@@ -27,5 +29,17 @@ async def send_welcome_email(email: str, username: str):
         subtype=MessageType.html,
     )
 
+    fm = FastMail(mail_conf)
+    await fm.send_message(message)
+
+
+# Say to user he is reported =====================================================
+async def send_report_user_email_details(email: str, username: str):
+    message = MessageSchema(
+        subject="You have been reported.",
+        recipients=[email],
+        body=f"Hello {username} your account is reported.",
+        subtype=MessageType.html,
+    )
     fm = FastMail(mail_conf)
     await fm.send_message(message)

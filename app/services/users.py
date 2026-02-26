@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi import BackgroundTasks, Depends, HTTPException, status
 
-from app.core.mails import send_welcome_email
+from app.core.mails import send_report_user_email_details, send_welcome_email
 from app.models.mixins.status_mixin import StatusEnum
 from app.models.users import RoleEnum, User
 from app.dependencies.database import get_db
@@ -76,44 +76,6 @@ def create_user_service(
 # ==================== PUT ===============================#
 # ==================== PATCH =============================#
 
-# Change user role (by a admin) ===========================================
-def change_user_role_by_admin_service(
-        admin_id: int,
-        user_id: int,
-        new_role: RoleEnum,
-        db: Session,
-)->User:
-    if admin_id == user_id:
-        raise ERROR_ADMIN_CANT_SELF_CHANGE_ROLE
-    user_to_update = get_user_by_id_or_404(id=user_id, db=db)
-    user_to_update.role = new_role
-    db.commit()
-    db.refresh(user_to_update)
-
-    return user_to_update
-
-# Change user status (by admin or moderator)
-def change_user_status_by_admin_or_moderator_service(
-        current_user: User,
-        user_id: int,
-        new_status: StatusEnum,
-        db: Session,
-)->User:
-    if current_user.id == user_id:
-        raise ERROR_ADMIN_OR_MODERATOR_CANT_SELF_CHANGE_STATUS
-    
-    user_to_update = get_user_by_id_or_404(id=user_id, db=db)
-
-    # secure if current user less rights of user_to_update (ie: current=MODERATOR, user_to_update=ADMIN)
-    if current_user.role == RoleEnum.MODERATOR and user_to_update.role == RoleEnum.ADMIN:
-        raise ERROR_MODERATOR_CANT_CHANGE_ADMIN_STATUS
-    user_to_update.status = new_status
-    db.commit()
-    db.refresh(user_to_update)
-
-    return user_to_update
-
-
 
 # ==================== DELETE ============================#
 
@@ -156,6 +118,53 @@ def soft_delete_user_service(
 # ==================== POST ==============================#
 # ==================== PUT ===============================#
 # ==================== PATCH =============================#
+
+# Change user role (by a admin) ===========================================
+def change_user_role_by_admin_service(
+        admin_id: int,
+        user_id: int,
+        new_role: RoleEnum,
+        db: Session,
+)->User:
+    if admin_id == user_id:
+        raise ERROR_ADMIN_CANT_SELF_CHANGE_ROLE
+    user_to_update = get_user_by_id_or_404(id=user_id, db=db)
+    user_to_update.role = new_role
+    db.commit()
+    db.refresh(user_to_update)
+
+    return user_to_update
+
+# Change user status (by admin or moderator)
+def change_user_status_by_admin_or_moderator_service(
+        current_user: User,
+        user_id: int,
+        new_status: StatusEnum,
+        background_task: BackgroundTasks,
+        db: Session,
+)->User:
+    if current_user.id == user_id:
+        raise ERROR_ADMIN_OR_MODERATOR_CANT_SELF_CHANGE_STATUS
+    
+    user_to_update = get_user_by_id_or_404(id=user_id, db=db)
+
+    # secure if current user less rights of user_to_update (ie: current=MODERATOR, user_to_update=ADMIN)
+    if current_user.role == RoleEnum.MODERATOR and user_to_update.role == RoleEnum.ADMIN:
+        raise ERROR_MODERATOR_CANT_CHANGE_ADMIN_STATUS
+    user_to_update.status = new_status
+    db.commit()
+    db.refresh(user_to_update)
+
+    # send mail to say user the report:
+    if new_status == StatusEnum.REPORTED:
+        if user_to_update.email:
+            background_task.add_task(send_report_user_email_details, 
+                                     email=user_to_update.email, 
+                                     username=user_to_update.username)
+
+    return user_to_update
+
+
 # ==================== DELETE ============================#
 
 

@@ -135,6 +135,7 @@ def change_user_status_by_admin_or_moderator(
     current_user: Annotated[User, Depends(required_roles(RoleEnum.ADMIN, RoleEnum.MODERATOR))],
     user_id: Annotated[int, Path(..., description="User ID you want to change status.")],
     new_status: Annotated[UserSwapStatusFormSchema, Body(..., description="new status to give to the user.")],
+    background_task: BackgroundTasks,
     db: Annotated[Session, Depends(get_db)],
 ):
     return change_user_status_by_admin_or_moderator_service(
@@ -142,6 +143,7 @@ def change_user_status_by_admin_or_moderator(
         user_id=user_id,
         new_status=new_status.new_status,
         db=db,
+        background_task=background_task
     )
 
 
