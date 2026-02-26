@@ -69,7 +69,7 @@ def create_user_service(
     db.refresh(new_user)
     # start background task:
     if new_user.email:
-        background_task.add_task(send_welcome_email, email=new_user.email, username=new_user.username)
+        background_task.add_task(send_welcome_email, user=new_user)
     return new_user
 
 
