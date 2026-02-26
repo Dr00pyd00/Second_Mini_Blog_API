@@ -22,6 +22,14 @@ from app.errors_messages.users import (
     ERROR_USER_SOFT_DELETED
 )
 
+
+########################################################
+# =========== USER =================================== #
+########################################################
+
+
+# ==================== GET ===============================#
+
 # get user or return a 404 HTTPException
 def get_user_by_id_or_404(
         id: int,
@@ -35,7 +43,10 @@ def get_user_by_id_or_404(
         )
     return user
 
-# create user  ==============================================
+
+# ==================== POST ==============================#
+
+# create user:
 def create_user_service(
         user_data: UserCreationSchema,
         background_task: BackgroundTasks,
@@ -50,21 +61,21 @@ def create_user_service(
         existing_mail = db.query(User).filter(User.email == user_data.email).first()
         if existing_mail:
             raise ERROR_EMAIL_ALREADY_TAKEN
-
     user_data_dict = user_data.model_dump()
     user_data_dict["password"] = hash_user_pw(user_data_dict["password"])
-
     new_user = User(**user_data_dict)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-
     # start background task:
     if new_user.email:
         background_task.add_task(send_welcome_email, email=new_user.email, username=new_user.username)
     return new_user
 
-    
+
+# ==================== PUT ===============================#
+# ==================== PATCH =============================#
+
 # Change user role (by a admin) ===========================================
 def change_user_role_by_admin_service(
         admin_id: int,
@@ -80,7 +91,6 @@ def change_user_role_by_admin_service(
     db.refresh(user_to_update)
 
     return user_to_update
-
 
 # Change user status (by admin or moderator)
 def change_user_status_by_admin_or_moderator_service(
@@ -103,6 +113,9 @@ def change_user_status_by_admin_or_moderator_service(
 
     return user_to_update
 
+
+
+# ==================== DELETE ============================#
 
 # soft delete : the current user OR admin can soft delete the user.
 def soft_delete_user_service(
@@ -132,4 +145,22 @@ def soft_delete_user_service(
     db.commit()
     db.refresh(user_to_delete)
     return user_to_delete
+
+
+
+########################################################
+# =========== ADMIN ================================== #
+########################################################
+
+# ==================== GET ===============================#
+# ==================== POST ==============================#
+# ==================== PUT ===============================#
+# ==================== PATCH =============================#
+# ==================== DELETE ============================#
+
+
+
+
+    
+
 
