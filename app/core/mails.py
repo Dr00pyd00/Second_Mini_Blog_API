@@ -39,12 +39,13 @@ async def send_welcome_email(user: User):
 
 
 # Say to user he is reported =====================================================
-async def send_report_user_email_details(email: str, username: str):
+async def send_report_user_email_details(user: User):
     message = MessageSchema(
         subject="You have been reported.",
-        recipients=[email],
-        body=f"Hello {username} your account is reported.",
+        recipients=[user.email],
+        #body=f"Hello {username} your account is reported.",
         subtype=MessageType.html,
+        template_body={"user":user}
     )
     fm = FastMail(mail_conf)
-    await fm.send_message(message)
+    await fm.send_message(message, template_name="user_reported.html")

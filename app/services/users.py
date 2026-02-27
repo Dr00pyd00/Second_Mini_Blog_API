@@ -158,9 +158,7 @@ def change_user_status_by_admin_or_moderator_service(
     # send mail to say user the report:
     if new_status == StatusEnum.REPORTED:
         if user_to_update.email:
-            background_task.add_task(send_report_user_email_details, 
-                                     email=user_to_update.email, 
-                                     username=user_to_update.username)
+            background_task.add_task(send_report_user_email_details, user=user_to_update)
 
     return user_to_update
 
