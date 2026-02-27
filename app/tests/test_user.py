@@ -1,11 +1,7 @@
-import json
-from urllib import response
-
 from fastapi.testclient import TestClient
 
 from app.models.mixins.status_mixin import StatusEnum
 from app.models.users import RoleEnum
-from app.tests.conftest import client, create_user, auth_token, auth_header
 
 
 # ================================================================

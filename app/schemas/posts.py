@@ -50,6 +50,8 @@ class PostGetAllFilters(BaseModel):
 # For patch :
 # all possibly none and user can choice what to change
 class PostPatchFormSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     title: str | None = None
     content: str | None = None 
     published: bool | None = None

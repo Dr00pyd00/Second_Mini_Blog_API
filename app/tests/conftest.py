@@ -1,4 +1,5 @@
 from calendar import c
+from pickletools import pystring
 
 import pytest
 
@@ -67,7 +68,13 @@ def client(db_session:Session):
     # cancel all overrides:
     app.dependency_overrides.clear()
 
+# block send of emails ==========================================================
+from unittest.mock import patch
 
+@pytest.fixture(autouse=True)
+def mock_send_welcome_emails():
+    with patch("app.services.users.send_welcome_email"):
+        yield
 
 # prepare some preset users ======================================================
 
@@ -100,5 +107,18 @@ def auth_header(auth_token):
     return {"Authorization":f"Bearer {auth_token}"}
  
 
+# PRESET for POSTS ===================================================
+@pytest.fixture
+def create_post(client: TestClient, create_user, auth_header):
 
+    post_data = {
+        "title":"testtitle",
+        "content":"testcontent"
+    }
+    response = client.post(
+        "posts",
+         headers=auth_header,
+          json=post_data,
+            )
+    return response
  
