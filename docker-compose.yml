@@ -6,17 +6,27 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   db:
     image: postgres:15
     environment:
-      - POSTGRES_USER: $(POSTGRES_USER)
-      - POSTGRES_PASSWORD: $(POSTGRES_PASSWORD)
-      - POSTGRES_DB: $(POSTGRES_DB_NAME)
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
     volumes:
     # toutes les data vont vers /var/lib/postgresql/data dans le container 
     # MAIS c'est rediriger sur ma machine /var/lib/docker/volumes/postgres_data
       - postgres_data:/var/lib/postgresql/data
+    # checker si tout est bien lancer avant de lancer l'app
+    # healthcheck bloque tant que pas valide
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  postgres_data
+  postgres_data:
+
+
