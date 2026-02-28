@@ -21,6 +21,6 @@ COPY . .
 # 8000 = convention fastapi/uvicorn
 EXPOSE 8000
 
-# Run something when container start running
-# RUN: all time container start
+# CMD something when container start running
+# CMD: all time container start
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
